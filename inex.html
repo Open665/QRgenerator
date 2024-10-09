@@ -62,7 +62,7 @@
             text-align: center;
             margin-top: 40px;
         }
-        input[type="text"] {
+        input[type="text"], select {
             width: 80%;
             padding: 15px;
             margin-bottom: 20px;
@@ -83,6 +83,11 @@
         }
         #qrcode {
             margin-top: 40px;
+            position: relative;
+        }
+        #logo {
+            display: none; /* Masquer l'input par défaut */
+            margin-top: 20px;
         }
         footer {
             text-align: center;
@@ -133,6 +138,17 @@
     <section id="generator" class="blue qr-section">
         <h2>Générez Votre Code QR</h2>
         <input type="text" id="text" placeholder="Entrez le texte ou l'URL">
+        <select id="bg-color">
+            <option value="#ffffff">Blanc (Par défaut)</option>
+            <option value="#f44336">Rouge</option>
+            <option value="#4CAF50">Vert</option>
+            <option value="#2196f3">Bleu</option>
+            <option value="#ffeb3b">Jaune</option>
+        </select>
+        <br>
+        <label for="logo">Télécharger un logo (facultatif) :</label>
+        <input type="file" id="logo" accept="image/*" onchange="handleLogoUpload(event)">
+        <br>
         <button onclick="generateQRCode()">Générer le Code QR</button>
         <div id="qrcode"></div>
         <button class="download-btn" id="download-btn" style="display: none;" onclick="downloadQRCode()">
@@ -157,14 +173,41 @@
     </footer>
 
     <script>
+        let logoImage = null;
+
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                logoImage = e.target.result; // Store the image data
+            };
+            reader.readAsDataURL(file);
+        }
+
         function generateQRCode() {
             var text = document.getElementById("text").value;
+            var bgColor = document.getElementById("bg-color").value;
             document.getElementById("qrcode").innerHTML = "";
             var qrcode = new QRCode(document.getElementById("qrcode"), {
                 text: text,
                 width: 128,
-                height: 128
+                height: 128,
+                colorLight: bgColor
             });
+
+            if (logoImage) {
+                const canvas = document.querySelector("#qrcode canvas");
+                const ctx = canvas.getContext("2d");
+                const logoImg = new Image();
+                logoImg.src = logoImage;
+                logoImg.onload = function() {
+                    const logoSize = 40; // Size of the logo
+                    const x = (canvas.width / 2) - (logoSize / 2);
+                    const y = (canvas.height / 2) - (logoSize / 2);
+                    ctx.drawImage(logoImg, x, y, logoSize, logoSize);
+                };
+            }
+
             document.getElementById("download-btn").style.display = "inline-flex"; // Show download button
         }
 
@@ -181,4 +224,4 @@
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 
 </body>
-</html>
+                </html>
